@@ -28,6 +28,6 @@ jobs:
       run: mvn -B package --file pom.xml -pl !peers-js
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml  -pl !peers-js
+      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml  -pl !peers-js,!peers-demo,!peers-doc,!peers-gui,!peers-jws
       env:
         GITHUB_TOKEN: ${{ github.token }}
