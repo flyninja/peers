@@ -24,32 +24,33 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.media.SoundSource;
+import net.sourceforge.peers.sdp.Codec;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 
 public class XmlConfig implements Config {
 
     public final static int RTP_DEFAULT_PORT = 8000;
+    private final static String XML_CODEC_NODE = "codec";
+    private final static String XML_CODEC_ATTR_NAME = "name";
+    private final static String XML_CODEC_ATTR_PAYLOADTYPE = "payloadType";
 
     private Logger logger;
 
@@ -67,8 +68,10 @@ public class XmlConfig implements Config {
     private MediaMode mediaMode;
     private boolean mediaDebug;
     private String mediaFile;
+    private SoundSource.DataFormat mediaFileDataFormat;
     private int rtpPort;
     private String authorizationUsername;
+    private List<Codec> supportedCodecs;
     
     // corresponding DOM nodes
     
@@ -80,9 +83,11 @@ public class XmlConfig implements Config {
     private Node sipPortNode;
     private Node mediaModeNode;
     private Node mediaDebugNode;
+    private Node mediaFileDataFormatNode;
     private Node mediaFileNode;
     private Node rtpPortNode;
     private Node authUserNode;
+    private Node supportedCodecsNode;
 
     // non-persistent variables
 
@@ -173,6 +178,10 @@ public class XmlConfig implements Config {
         } else {
             mediaDebug = Boolean.parseBoolean(mediaDebugNode.getTextContent());
         }
+        mediaFileDataFormatNode = getFirstChild(documentElement, "mediaFileDataFormat");
+        if (!isNullOrEmpty(mediaFileDataFormatNode)) {
+            mediaFileDataFormat = SoundSource.DataFormat.fromShortAlias(mediaFileDataFormatNode.getTextContent());
+        }
         mediaFileNode = getFirstChild(documentElement, "mediaFile");
         if (!isNullOrEmpty(mediaFileNode)) {
             mediaFile = mediaFileNode.getTextContent();
@@ -190,6 +199,24 @@ public class XmlConfig implements Config {
             if (rtpPort % 2 != 0) {
                 logger.error("rtp port provided is " + rtpPort
                         + " rtp port must be even");
+            }
+        }
+
+        supportedCodecs = new ArrayList<Codec>();
+        supportedCodecsNode = getFirstChild(documentElement, "supportedCodecs");
+        if(supportedCodecsNode != null && supportedCodecsNode.hasChildNodes())
+        {
+            NodeList nodeList = supportedCodecsNode.getChildNodes();
+            for (int i = 0; i < nodeList.getLength(); ++i) {
+                Node node = nodeList.item(i);
+                if (XML_CODEC_NODE.equals(node.getNodeName()) && node.hasAttributes()) {
+                    Node name = node.getAttributes().getNamedItem(XML_CODEC_ATTR_NAME);
+                    Node pt = node.getAttributes().getNamedItem(XML_CODEC_ATTR_PAYLOADTYPE);
+                    Codec codec = new Codec();
+                    codec.setName(name.getNodeValue());
+                    codec.setPayloadType(Integer.parseInt(pt.getNodeValue()));
+                    supportedCodecs.add(codec);
+                }
             }
         }
     }
@@ -218,6 +245,7 @@ public class XmlConfig implements Config {
         Transformer transformer;
         try {
             transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         } catch (TransformerConfigurationException e) {
             logger.error("cannot create transformer", e);
             return;
@@ -296,6 +324,19 @@ public class XmlConfig implements Config {
     }
 
     @Override
+    public List<Codec> getSupportedCodecs() {
+        return supportedCodecs;
+    }
+
+    @Override
+    public SoundSource.DataFormat getMediaFileDataFormat() { return mediaFileDataFormat; }
+
+    @Override
+    public String getMediaFile() {
+        return mediaFile;
+    }
+
+    @Override
     public void setLocalInetAddress(InetAddress inetAddress) {
         this.localInetAddress = inetAddress;
         ipAddressNode.setTextContent(inetAddress.getHostAddress());
@@ -332,7 +373,6 @@ public class XmlConfig implements Config {
         } else {
             outboundProxyNode.setTextContent(outboundProxy.toString());
         }
-        
     }
 
     @Override
@@ -366,13 +406,36 @@ public class XmlConfig implements Config {
     }
 
     @Override
-    public String getMediaFile() {
-        return mediaFile;
+    public void setSupportedCodecs(List<Codec> supportedCodecs) {
+       this.supportedCodecs = supportedCodecs;
+
+       // Remove all child nodes first
+       if(supportedCodecsNode.hasChildNodes()) {
+           NodeList nodeList = supportedCodecsNode.getChildNodes();
+           for (int i = nodeList.getLength() - 1; i > 0; i--) {
+               Node node = nodeList.item(i);
+               supportedCodecsNode.removeChild(node);
+           }
+       }
+
+       for(Codec codec : supportedCodecs)
+       {
+           Element node = document.createElement(XML_CODEC_NODE);
+           node.setAttribute(XML_CODEC_ATTR_NAME, codec.getName());
+           node.setAttribute(XML_CODEC_ATTR_PAYLOADTYPE, Integer.toString(codec.getPayloadType()));
+           supportedCodecsNode.appendChild(node);
+       }
+    }
+
+    @Override
+    public void setMediaFileDataFormat(SoundSource.DataFormat mediaFileDataFormat) {
+        this.mediaFileDataFormat = mediaFileDataFormat;
+        mediaFileDataFormatNode.setTextContent(mediaFileDataFormat.getShortAlias());
     }
 
     @Override
     public void setMediaFile(String mediaFile) {
         this.mediaFile = mediaFile;
+        mediaFileNode.setTextContent(mediaFile);
     }
-
 }

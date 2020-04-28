@@ -20,8 +20,14 @@
 package net.sourceforge.peers;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.media.SoundSource;
+import net.sourceforge.peers.rtp.RFC3551;
+import net.sourceforge.peers.rtp.RFC4733;
+import net.sourceforge.peers.sdp.Codec;
 import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 
 public class JavaConfig implements Config {
@@ -29,15 +35,57 @@ public class JavaConfig implements Config {
     private InetAddress localInetAddress;
     private InetAddress publicInetAddress;
     private String userPart;
-    private String domain;
     private String password;
+    private String domain;
     private SipURI outboundProxy;
     private int sipPort;
     private MediaMode mediaMode;
     private boolean mediaDebug;
+    private SoundSource.DataFormat mediaFileDataFormat;
     private String mediaFile;
     private int rtpPort;
     private String authorizationUsername;
+    private List<Codec> supportedCodecs;
+
+    public JavaConfig()
+    {
+        // Add default codecs
+        supportedCodecs = new ArrayList<Codec>();
+
+        Codec codec = new Codec();
+        codec.setPayloadType(RFC3551.PAYLOAD_TYPE_PCMA);
+        codec.setName(RFC3551.PCMA);
+        supportedCodecs.add(codec);
+
+        codec = new Codec();
+        codec.setPayloadType(RFC3551.PAYLOAD_TYPE_PCMU);
+        codec.setName(RFC3551.PCMU);
+        supportedCodecs.add(codec);
+
+        codec = new Codec();
+        codec.setPayloadType(RFC4733.PAYLOAD_TYPE_TELEPHONE_EVENT);
+        codec.setName(RFC4733.TELEPHONE_EVENT);
+        //TODO add fmtp:101 0-15 attribute
+        supportedCodecs.add(codec);
+    }
+
+    public JavaConfig(InetAddress localInetAddress, String userPart, String password, String domain,
+                      SipURI outboundProxy, int sipPort, MediaMode mediaMode, boolean mediaDebug,
+                      SoundSource.DataFormat mediaFileDataFormat, String mediaFile, int rtpPort, String authorizationUsername, List<Codec> supportedCodecs) {
+        this.localInetAddress = localInetAddress;
+        this.userPart = userPart;
+        this.password = password;
+        this.domain = domain;
+        this.outboundProxy = outboundProxy;
+        this.sipPort = sipPort;
+        this.mediaMode = mediaMode;
+        this.mediaDebug = mediaDebug;
+        this.mediaFileDataFormat = mediaFileDataFormat;
+        this.mediaFile = mediaFile;
+        this.rtpPort = rtpPort;
+        this.authorizationUsername = authorizationUsername;
+        this.supportedCodecs = supportedCodecs;
+    }
 
     @Override
     public void save() {
@@ -99,6 +147,19 @@ public class JavaConfig implements Config {
     }
 
     @Override
+    public List<Codec> getSupportedCodecs() {
+        return supportedCodecs;
+    }
+
+    @Override
+    public SoundSource.DataFormat getMediaFileDataFormat() { return mediaFileDataFormat; }
+
+    @Override
+    public String getMediaFile() {
+        return mediaFile;
+    }
+
+    @Override
     public void setLocalInetAddress(InetAddress inetAddress) {
         localInetAddress = inetAddress;
     }
@@ -153,8 +214,13 @@ public class JavaConfig implements Config {
     }
 
     @Override
-    public String getMediaFile() {
-        return mediaFile;
+    public void setSupportedCodecs(List<Codec> supportedCodecs) {
+       this.supportedCodecs = supportedCodecs;
+    }
+
+    @Override
+    public void setMediaFileDataFormat(SoundSource.DataFormat mediaFileDataFormat) {
+        this.mediaFileDataFormat = mediaFileDataFormat;
     }
 
     @Override

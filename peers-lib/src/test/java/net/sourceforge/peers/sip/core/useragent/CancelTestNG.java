@@ -25,8 +25,9 @@ import java.net.UnknownHostException;
 
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.JavaConfig;
-import net.sourceforge.peers.media.AbstractSoundManager;
+import net.sourceforge.peers.media.AbstractSoundManagerFactory;
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
 import net.sourceforge.peers.sip.transport.SipRequest;
 import net.sourceforge.peers.sip.transport.SipResponse;
@@ -52,16 +53,14 @@ public class CancelTestNG {
         config.setLocalInetAddress(InetAddress.getLocalHost());
         config.setMediaMode(MediaMode.none);
         user1SipListener = new UserSipListener();
-        AbstractSoundManager soundManager = new DummySoundManager();
-        testUser1 = new UserAgent(user1SipListener, config, null,
-                soundManager);
+        AbstractSoundManagerFactory soundManagerFactory = new TestSoundManagerFactory();
+        testUser1 = new UserAgent(user1SipListener, soundManagerFactory, config, null, null);
 
         config = new JavaConfig();
         config.setLocalInetAddress(InetAddress.getLocalHost());
         config.setMediaMode(MediaMode.none);
         user2SipListener = new UserSipListener();
-        testUser2 = new UserAgent(user2SipListener, config, null,
-                soundManager);
+        testUser2 = new UserAgent(user2SipListener, soundManagerFactory, config, null, null);
 
     }
 
@@ -104,6 +103,11 @@ public class CancelTestNG {
         @Override
         public void error(SipResponse sipResponse) {
             invite487Received = true;
+        }
+
+        @Override
+        public void dtmfEvent(RFC4733.DTMFEvent dtmfEvent, int duration) {
+
         }
 
         @Override

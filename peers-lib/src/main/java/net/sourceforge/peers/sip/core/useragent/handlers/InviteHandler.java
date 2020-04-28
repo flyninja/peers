@@ -29,8 +29,8 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Timer;
 
+import net.sourceforge.peers.Timer;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.sdp.Codec;
@@ -339,6 +339,10 @@ public class InviteHandler extends DialogMethodHandler
     //////////////////////////////////////////////////////////
     // UAC methods
     //////////////////////////////////////////////////////////
+
+    public void closeTimers() {
+        ackTimer.cancel();
+    }
     
     public ClientTransaction preProcessInvite(SipRequest sipRequest)
             throws SipUriSyntaxException {

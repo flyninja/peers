@@ -77,6 +77,11 @@ public class ByeHandler extends DialogMethodHandler
         userAgent.getPeers().remove(addrSpec);
         dialogManager.removeDialog(dialog.getId());
         logger.debug("removed dialog " + dialog.getId());
+
+        SipListener sipListener = userAgent.getSipListener();
+        if (sipListener != null) {
+            sipListener.remoteHangup(sipRequest);
+        }
         userAgent.getMediaManager().stopSession();
         
         SipResponse sipResponse =
@@ -104,11 +109,6 @@ public class ByeHandler extends DialogMethodHandler
         serverTransaction.sendReponse(sipResponse);
         
         dialogManager.removeDialog(dialog.getId());
-
-        SipListener sipListener = userAgent.getSipListener();
-        if (sipListener != null) {
-            sipListener.remoteHangup(sipRequest);
-        }
 
 //        setChanged();
 //        notifyObservers(sipRequest);
