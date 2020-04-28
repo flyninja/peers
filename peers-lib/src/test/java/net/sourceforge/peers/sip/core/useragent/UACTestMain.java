@@ -21,8 +21,10 @@ package net.sourceforge.peers.sip.core.useragent;
 
 import java.net.SocketException;
 
+import net.sourceforge.peers.Config;
 import net.sourceforge.peers.FileLogger;
-import net.sourceforge.peers.media.AbstractSoundManager;
+import net.sourceforge.peers.JavaConfig;
+import net.sourceforge.peers.media.AbstractSoundManagerFactory;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
 import net.sourceforge.peers.sip.transport.SipRequest;
 
@@ -32,10 +34,10 @@ public class UACTestMain {
         String requestUri;
         UserAgent userAgent;
         SipRequest sipRequest;
-        AbstractSoundManager soundManager = new DummySoundManager();
+        AbstractSoundManagerFactory soundManagerFactory = new TestSoundManagerFactory();
+        Config config = new JavaConfig();
         try {
-            userAgent = new UserAgent(null, (String)null, new FileLogger(null),
-                    soundManager);
+            userAgent = new UserAgent(null, soundManagerFactory, config, (String)null, new FileLogger(null));
             requestUri = "sip:bob@" + userAgent.getConfig()
                 .getLocalInetAddress().getHostAddress() + ":6060";
             sipRequest = userAgent.invite(requestUri,

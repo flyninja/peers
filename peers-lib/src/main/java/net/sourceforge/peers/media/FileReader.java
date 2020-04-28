@@ -40,7 +40,8 @@ import net.sourceforge.peers.Logger;
 //
 // File > Export
 //
-// - File name: test.raw
+// - File type: AIFF (Apple) signed 16-bit PCM, File name: test.raw
+// - or, File type: Other uncompressed files, Header: RAW (header-less), Encoding: A-law, File name: test.alaw
 //
 // Validate
 
@@ -48,16 +49,19 @@ public class FileReader implements SoundSource {
 
     public final static int BUFFER_SIZE = 256;
 
+    private Object finishedSync = new Object();
     private FileInputStream fileInputStream;
+    private DataFormat fileDataFormat;
     private Logger logger;
 
-    public FileReader(String fileName, Logger logger) {
+    public FileReader(String fileName, DataFormat fileDataFormat, Logger logger) {
         this.logger = logger;
         try {
             fileInputStream = new FileInputStream(fileName);
         } catch (FileNotFoundException e) {
             logger.error("file not found: " + fileName, e);
         }
+        this.fileDataFormat = fileDataFormat;
     }
 
     public synchronized void close() {
@@ -68,7 +72,15 @@ public class FileReader implements SoundSource {
                 logger.error("io exception", e);
             }
             fileInputStream = null;
+            synchronized (finishedSync) {
+                finishedSync.notifyAll();
+            }
         }
+    }
+
+    @Override
+    public DataFormat dataProduced() {
+        return (fileDataFormat != null)?fileDataFormat:DataFormat.DEFAULT;
     }
 
     @Override
@@ -78,19 +90,34 @@ public class FileReader implements SoundSource {
         }
         byte buffer[] = new byte[BUFFER_SIZE];
         try {
-            if (fileInputStream.read(buffer) >= 0) {
-                Thread.sleep(15);
+            int read;
+            if ((read = fileInputStream.read(buffer)) >= 0) {
+                // TODO There is a problem if not the entire buffer was filled. That is not communicated to the reader of the returned byte-array
+                if (read < buffer.length) System.out.println("Buffer was not completely filled, but we are sending it all through anyway");
                 return buffer;
             } else {
-                fileInputStream.close();
-                fileInputStream = null;
+                close();
             }
         } catch (IOException e) {
             logger.error("io exception", e);
-        } catch (InterruptedException e) {
-            logger.debug("file reader interrupted");
         }
         return null;
     }
 
+    @Override
+    public boolean finished() {
+        return fileInputStream == null;
+    }
+
+    @Override
+    public void waitFinished() throws InterruptedException {
+        if (!finished()) {
+            synchronized (finishedSync) {
+                while (!finished()) {
+                    finishedSync.wait();
+                }
+            }
+        }
+        return;
+    }
 }

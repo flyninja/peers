@@ -23,8 +23,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Timer;
 
+import net.sourceforge.peers.Timer;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.Utils;
@@ -55,6 +55,10 @@ public class TransactionManager {
         serverTransactions = new Hashtable<String, ServerTransaction>();
         timer = new Timer(TransactionManager.class.getSimpleName()
                 + " " + Timer.class.getSimpleName());
+    }
+
+    public void closeTimers() {
+        timer.cancel();
     }
     
     public ClientTransaction createClientTransaction(SipRequest sipRequest,
@@ -129,7 +133,7 @@ public class TransactionManager {
             SipRequest sipRequest = transaction.getRequest();
             String reqCallId = Utils.getMessageCallId(sipRequest);
             String reqMethod = sipRequest.getMethod();
-            if (callId.equals(reqCallId) && method.equals(reqMethod)) {
+            if (reqCallId.equals(callId) && method.equals(reqMethod)) {
                 clientTransactionsFromCallId.add(clientTransaction);
             }
         }

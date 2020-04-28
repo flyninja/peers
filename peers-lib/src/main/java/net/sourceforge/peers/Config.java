@@ -20,8 +20,11 @@
 package net.sourceforge.peers;
 
 import java.net.InetAddress;
+import java.util.List;
 
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.media.SoundSource;
+import net.sourceforge.peers.sdp.Codec;
 import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 
 public interface Config {
@@ -36,9 +39,11 @@ public interface Config {
     public int getSipPort();
     public MediaMode getMediaMode();
     public boolean isMediaDebug();
+    public SoundSource.DataFormat getMediaFileDataFormat();
     public String getMediaFile();
     public int getRtpPort();
     public String getAuthorizationUsername();
+    public List<Codec> getSupportedCodecs();
     public void setLocalInetAddress(InetAddress inetAddress);
     public void setPublicInetAddress(InetAddress inetAddress);
     public void setUserPart(String userPart);
@@ -48,8 +53,10 @@ public interface Config {
     public void setSipPort(int sipPort);
     public void setMediaMode(MediaMode mediaMode);
     public void setMediaDebug(boolean mediaDebug);
+    public void setMediaFileDataFormat(SoundSource.DataFormat mediaFileDataFormat);
     public void setMediaFile(String mediaFile);
     public void setRtpPort(int rtpPort);
     public void setAuthorizationUsername(String authorizationUsername);
+    public void setSupportedCodecs(List<Codec> supportedCodecs);
 
 }

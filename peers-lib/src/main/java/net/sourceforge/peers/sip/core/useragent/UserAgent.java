@@ -19,19 +19,12 @@
 
 package net.sourceforge.peers.sip.core.useragent;
 
-import java.io.File;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.FileLogger;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.XmlConfig;
-import net.sourceforge.peers.media.AbstractSoundManager;
-import net.sourceforge.peers.media.Echo;
-import net.sourceforge.peers.media.MediaManager;
-import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.media.*;
+import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sdp.SDPManager;
 import net.sourceforge.peers.sip.Utils;
 import net.sourceforge.peers.sip.core.useragent.handlers.ByeHandler;
@@ -50,8 +43,13 @@ import net.sourceforge.peers.sip.transport.SipRequest;
 import net.sourceforge.peers.sip.transport.SipResponse;
 import net.sourceforge.peers.sip.transport.TransportManager;
 
+import java.io.File;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class UserAgent {
+
+public class UserAgent implements DtmfEventHandler {
 
     public final static String CONFIG_FILE = "conf" + File.separator + "peers.xml";
     public final static int RTP_DEFAULT_PORT = 8000;
@@ -74,30 +72,34 @@ public class UserAgent {
     private DialogManager dialogManager;
     private TransactionManager transactionManager;
     private TransportManager transportManager;
+    private InviteHandler inviteHandler;
 
     private int cseqCounter;
+    private AbstractSoundManagerFactory abstractSoundManagerFactory;
     private SipListener sipListener;
     
     private SDPManager sdpManager;
-    private AbstractSoundManager soundManager;
     private MediaManager mediaManager;
 
-    public UserAgent(SipListener sipListener, String peersHome,
-            Logger logger, AbstractSoundManager soundManager)
+    public UserAgent(SipListener sipListener, String peersHome, Logger logger)
                     throws SocketException {
-        this(sipListener, null, peersHome, logger, soundManager);
+        this(sipListener, null, peersHome, logger);
     }
 
-    public UserAgent(SipListener sipListener, Config config,
-            Logger logger, AbstractSoundManager soundManager)
+    public UserAgent(SipListener sipListener, Config config, Logger logger)
                     throws SocketException {
-        this(sipListener, config, null, logger, soundManager);
+        this(sipListener, config, null, logger);
     }
 
-    private UserAgent(SipListener sipListener, Config config, String peersHome,
-            Logger logger, AbstractSoundManager soundManager)
+    private UserAgent(SipListener sipListener, Config config, String peersHome, Logger logger)
+            throws SocketException {
+        this(sipListener, null, config, peersHome, logger);
+    }
+
+    public UserAgent(SipListener sipListener, AbstractSoundManagerFactory abstractSoundManagerFactory, Config config, String peersHome, Logger logger)
                     throws SocketException {
         this.sipListener = sipListener;
+        this.abstractSoundManagerFactory = abstractSoundManagerFactory;
         if (peersHome == null) {
             peersHome = Utils.DEFAULT_PEERS_HOME;
         }
@@ -111,6 +113,10 @@ public class UserAgent {
                     + CONFIG_FILE, this.logger);
         }
         this.config = config;
+        if (abstractSoundManagerFactory == null) {
+            abstractSoundManagerFactory = new ConfigAbstractSoundManagerFactory(this.config, this.peersHome, this.logger);
+        }
+        this.abstractSoundManagerFactory = abstractSoundManagerFactory;
 
         cseqCounter = 1;
         
@@ -143,7 +149,7 @@ public class UserAgent {
         
         //core
         
-        InviteHandler inviteHandler = new InviteHandler(this,
+        inviteHandler = new InviteHandler(this,
                 dialogManager,
                 transactionManager,
                 transportManager,
@@ -222,16 +228,16 @@ public class UserAgent {
         sdpManager = new SDPManager(this, logger);
         inviteHandler.setSdpManager(sdpManager);
         optionsHandler.setSdpManager(sdpManager);
-        // soundManager  = new SoundManager(config.isMediaDebug(), logger,
-        // this.peersHome);
-        this.soundManager = soundManager;
-        mediaManager = new MediaManager(this, logger);
+        mediaManager = new MediaManager(this, this, logger);
     }
     
     // client methods
 
     public void close() {
         transportManager.closeTransports();
+        transactionManager.closeTimers();
+        inviteHandler.closeTimers();
+        mediaManager.stopSession();
         config.setPublicInetAddress(null);
     }
     
@@ -369,12 +375,12 @@ public class UserAgent {
         this.echo = echo;
     }
 
-    public SipListener getSipListener() {
-        return sipListener;
+    public AbstractSoundManagerFactory getAbstractSoundManagerFactory() {
+        return abstractSoundManagerFactory;
     }
 
-    public AbstractSoundManager getSoundManager() {
-        return soundManager;
+    public SipListener getSipListener() {
+        return sipListener;
     }
 
     public MediaManager getMediaManager() {
@@ -391,5 +397,10 @@ public class UserAgent {
 
     public TransportManager getTransportManager() {
         return transportManager;
+    }
+
+    @Override
+    public void dtmfDetected(RFC4733.DTMFEvent dtmfEvent, int duration) {
+        sipListener.dtmfEvent(dtmfEvent, duration);
     }
 }
