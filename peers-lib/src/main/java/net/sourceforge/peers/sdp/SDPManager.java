@@ -30,18 +30,19 @@ import net.sourceforge.peers.Config;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.rtp.RFC3551;
 import net.sourceforge.peers.rtp.RFC4733;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 import net.sourceforge.peers.sip.core.useragent.UserAgent;
 
 public class SDPManager {
     
     private SdpParser sdpParser;
-    private UserAgent userAgent;
+    private AbstractUserAgent userAgent;
     private List<Codec> supportedCodecs;
     private Random random;
 
     private Logger logger;
     
-    public SDPManager(UserAgent userAgent, Logger logger) {
+    public SDPManager(AbstractUserAgent userAgent, Logger logger) {
         this.userAgent = userAgent;
         this.logger = logger;
         sdpParser = new SdpParser();

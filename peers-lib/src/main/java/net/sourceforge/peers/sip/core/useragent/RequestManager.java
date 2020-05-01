@@ -97,12 +97,12 @@ public abstract class RequestManager {
     protected OptionsHandler optionsHandler;
     protected RegisterHandler registerHandler;
     
-    protected UserAgent userAgent;
+    protected AbstractUserAgent userAgent;
     protected TransactionManager transactionManager;
     protected TransportManager transportManager;
     protected Logger logger;
     
-    public RequestManager(UserAgent userAgent,
+    public RequestManager(AbstractUserAgent userAgent,
             InviteHandler inviteHandler,
             CancelHandler cancelHandler,
             ByeHandler byeHandler,

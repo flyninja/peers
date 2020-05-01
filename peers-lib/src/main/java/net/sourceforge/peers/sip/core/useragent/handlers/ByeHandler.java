@@ -21,9 +21,9 @@ package net.sourceforge.peers.sip.core.useragent.handlers;
 
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.sip.RFC3261;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 import net.sourceforge.peers.sip.core.useragent.RequestManager;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.transaction.ClientTransaction;
 import net.sourceforge.peers.sip.transaction.ClientTransactionUser;
 import net.sourceforge.peers.sip.transaction.NonInviteClientTransaction;
@@ -40,7 +40,7 @@ import net.sourceforge.peers.sip.transport.TransportManager;
 public class ByeHandler extends DialogMethodHandler
         implements ServerTransactionUser, ClientTransactionUser {
 
-    public ByeHandler(UserAgent userAgent, DialogManager dialogManager,
+    public ByeHandler(AbstractUserAgent userAgent, DialogManager dialogManager,
             TransactionManager transactionManager,
             TransportManager transportManager, Logger logger) {
         super(userAgent, dialogManager, transactionManager, transportManager,

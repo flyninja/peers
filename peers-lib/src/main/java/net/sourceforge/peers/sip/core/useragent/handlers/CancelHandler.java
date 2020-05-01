@@ -22,9 +22,9 @@ package net.sourceforge.peers.sip.core.useragent.handlers;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.Utils;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 import net.sourceforge.peers.sip.core.useragent.MidDialogRequestManager;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldValue;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderParamName;
@@ -44,7 +44,7 @@ import net.sourceforge.peers.sip.transport.TransportManager;
 public class CancelHandler extends DialogMethodHandler
         implements ServerTransactionUser {
 
-    public CancelHandler(UserAgent userAgent, DialogManager dialogManager,
+    public CancelHandler(AbstractUserAgent userAgent, DialogManager dialogManager,
             TransactionManager transactionManager,
             TransportManager transportManager, Logger logger) {
         super(userAgent, dialogManager, transactionManager, transportManager,

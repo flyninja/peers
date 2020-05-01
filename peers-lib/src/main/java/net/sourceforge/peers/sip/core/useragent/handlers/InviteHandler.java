@@ -29,9 +29,8 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-
-import net.sourceforge.peers.Timer;
 import net.sourceforge.peers.Logger;
+import net.sourceforge.peers.Timer;
 import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.sdp.Codec;
 import net.sourceforge.peers.sdp.MediaDestination;
@@ -39,9 +38,9 @@ import net.sourceforge.peers.sdp.NoCodecException;
 import net.sourceforge.peers.sdp.SessionDescription;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.Utils;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 import net.sourceforge.peers.sip.core.useragent.RequestManager;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.syntaxencoding.NameAddress;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldValue;
@@ -73,7 +72,7 @@ public class InviteHandler extends DialogMethodHandler
     private Timer ackTimer;
     private boolean initialIncomingInvite;
     
-    public InviteHandler(UserAgent userAgent,
+    public InviteHandler(AbstractUserAgent userAgent,
             DialogManager dialogManager,
             TransactionManager transactionManager,
             TransportManager transportManager, Logger logger) {

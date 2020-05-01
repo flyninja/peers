@@ -23,8 +23,8 @@ import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.sdp.SDPManager;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.Utils;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 import net.sourceforge.peers.sip.core.useragent.ChallengeManager;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldValue;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderParamName;
@@ -36,7 +36,7 @@ import net.sourceforge.peers.sip.transport.TransportManager;
 
 public abstract class MethodHandler {
 
-    protected UserAgent userAgent;
+    protected AbstractUserAgent userAgent;
     protected TransactionManager transactionManager;
     protected TransportManager transportManager;
     protected ChallengeManager challengeManager;
@@ -44,7 +44,7 @@ public abstract class MethodHandler {
     protected boolean challenged;
     protected Logger logger;
     
-    public MethodHandler(UserAgent userAgent,
+    public MethodHandler(AbstractUserAgent userAgent,
             TransactionManager transactionManager,
             TransportManager transportManager, Logger logger) {
         this.userAgent = userAgent;
