@@ -19,18 +19,16 @@
 
 package net.sourceforge.peers.media;
 
-import net.sourceforge.peers.Logger;
-import net.sourceforge.peers.rtp.RtpPacket;
-import net.sourceforge.peers.rtp.RtpSession;
-import net.sourceforge.peers.sdp.Codec;
-import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import net.sourceforge.peers.Logger;
+import net.sourceforge.peers.rtp.RtpPacket;
+import net.sourceforge.peers.rtp.RtpSession;
+import net.sourceforge.peers.sdp.Codec;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 
 public class MediaManager {
 

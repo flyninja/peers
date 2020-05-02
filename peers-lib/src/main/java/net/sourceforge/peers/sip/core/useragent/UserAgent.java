@@ -19,11 +19,16 @@
 
 package net.sourceforge.peers.sip.core.useragent;
 
+import java.io.File;
+import java.net.SocketException;
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.FileLogger;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.XmlConfig;
-import net.sourceforge.peers.media.*;
+import net.sourceforge.peers.media.AbstractSoundManagerFactory;
+import net.sourceforge.peers.media.ConfigAbstractSoundManagerFactory;
+import net.sourceforge.peers.media.Echo;
+import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sdp.SDPManager;
 import net.sourceforge.peers.sip.Utils;
@@ -32,7 +37,6 @@ import net.sourceforge.peers.sip.core.useragent.handlers.CancelHandler;
 import net.sourceforge.peers.sip.core.useragent.handlers.InviteHandler;
 import net.sourceforge.peers.sip.core.useragent.handlers.OptionsHandler;
 import net.sourceforge.peers.sip.core.useragent.handlers.RegisterHandler;
-import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
 import net.sourceforge.peers.sip.transaction.Transaction;
 import net.sourceforge.peers.sip.transaction.TransactionManager;
@@ -42,11 +46,6 @@ import net.sourceforge.peers.sip.transport.SipMessage;
 import net.sourceforge.peers.sip.transport.SipRequest;
 import net.sourceforge.peers.sip.transport.SipResponse;
 import net.sourceforge.peers.sip.transport.TransportManager;
-
-import java.io.File;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class UserAgent extends AbstractUserAgent {
@@ -96,7 +95,7 @@ public class UserAgent extends AbstractUserAgent {
         this(sipListener, config, null, logger);
     }
 
-    private UserAgent(SipListener sipListener, Config config, String peersHome, Logger logger)
+    public UserAgent(SipListener sipListener, Config config, String peersHome, Logger logger)
             throws SocketException {
         this(sipListener, null, config, peersHome, logger);
     }
@@ -159,27 +158,15 @@ public class UserAgent extends AbstractUserAgent {
         initialRequestManager = createInitialRequestManager();
         midDialogRequestManager = createMidDialogRequestManager();
         
-        uas = new UAS(this,
-                initialRequestManager,
-                midDialogRequestManager,
-                dialogManager,
-                transactionManager,
-                transportManager);
-
-        uac = new UAC(this,
-                initialRequestManager,
-                midDialogRequestManager,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
-
         challengeManager = createChallengeManager();
 
         //dialogs = new ArrayList<Dialog>();
 
         sdpManager = createSDPManager();
         mediaManager = createMediaManager();
+
+        uas = createUAS();
+        uac = createUAC();
     }
     
     // client methods

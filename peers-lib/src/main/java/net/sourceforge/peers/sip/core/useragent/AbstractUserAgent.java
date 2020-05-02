@@ -1,5 +1,6 @@
 package net.sourceforge.peers.sip.core.useragent;
 
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -173,6 +174,25 @@ public abstract class AbstractUserAgent implements IUserAgent {
 
     protected RegisterHandler createRegisterHandler() {
         return new RegisterHandler(this,
+                getTransactionManager(),
+                getTransportManager(),
+                getLogger());
+    }
+
+    protected UAS createUAS() throws SocketException {
+        return new UAS(this,
+                getInitialRequestManager(),
+                getMidDialogRequestManager(),
+                getDialogManager(),
+                getTransactionManager(),
+                getTransportManager());
+    }
+
+    protected UAC createUAC() {
+        return new UAC(this,
+                getInitialRequestManager(),
+                getMidDialogRequestManager(),
+                getDialogManager(),
                 getTransactionManager(),
                 getTransportManager(),
                 getLogger());
