@@ -4,12 +4,12 @@
 
   <groupId>net.sourceforge.peers</groupId>
   <artifactId>peers-javaxsound</artifactId>
-  <version>0.5.2-SNAPSHOT</version>
+  <version>0.5.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <peers.lib.version>0.6.1</peers.lib.version>
+    <peers.lib.version>0.6.0</peers.lib.version>
   </properties>
 
   <repositories>
