@@ -6,6 +6,7 @@ import net.sourceforge.peers.Config;
 import net.sourceforge.peers.FileLogger;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.javaxsound.JavaxSoundManager;
+import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
 import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
@@ -22,7 +23,7 @@ public class EventManager implements SipListener {
         Config config = new CustomConfig();
         Logger logger = new FileLogger(null);
         JavaxSoundManager javaxSoundManager = new JavaxSoundManager(false, logger, null);
-        userAgent = new UserAgent(this, config, logger, javaxSoundManager);
+        userAgent = new UserAgent(this, config, ".", logger);
         new Thread() {
             public void run() {
                 try {
@@ -86,6 +87,11 @@ public class EventManager implements SipListener {
 
     @Override
     public void error(SipResponse sipResponse) { }
+
+    @Override
+    public void dtmfEvent(RFC4733.DTMFEvent dtmfEvent, int duration) {
+
+    }
 
     public static void main(String[] args) {
         try {

@@ -36,6 +36,7 @@ import net.sourceforge.peers.Config;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.media.AbstractSoundManager;
 import net.sourceforge.peers.media.MediaManager;
+import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.Utils;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
@@ -78,7 +79,7 @@ public class EventManager implements SipListener, MainFrameListener,
         closed = false;
         // create sip stack
         try {
-            userAgent = new UserAgent(this, peersHome, logger, soundManager);
+            userAgent = new UserAgent(this, peersHome, logger);
         } catch (SocketException e) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -174,6 +175,11 @@ public class EventManager implements SipListener, MainFrameListener,
                 }
             }
         });
+
+    }
+
+    @Override
+    public void dtmfEvent(RFC4733.DTMFEvent dtmfEvent, int duration) {
 
     }
 
