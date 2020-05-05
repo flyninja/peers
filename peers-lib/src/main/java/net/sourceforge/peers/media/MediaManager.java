@@ -19,23 +19,22 @@
 
 package net.sourceforge.peers.media;
 
-import net.sourceforge.peers.Logger;
-import net.sourceforge.peers.rtp.RtpPacket;
-import net.sourceforge.peers.rtp.RtpSession;
-import net.sourceforge.peers.sdp.Codec;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import net.sourceforge.peers.Logger;
+import net.sourceforge.peers.rtp.RtpPacket;
+import net.sourceforge.peers.rtp.RtpSession;
+import net.sourceforge.peers.sdp.Codec;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 
 public class MediaManager {
 
     public static final int DEFAULT_CLOCK = 8000; // Hz
 
-    private UserAgent userAgent;
+    private AbstractUserAgent userAgent;
     private Object connectedSync = new Object();
     private CaptureRtpSender captureRtpSender;
     private IncomingRtpReader incomingRtpReader;
@@ -47,7 +46,7 @@ public class MediaManager {
     private AbstractSoundManager soundManager;
     private DtmfEventHandler dtmfEventHandler;
 
-    public MediaManager(UserAgent userAgent, DtmfEventHandler dtmfEventHandler,  Logger logger) {
+    public MediaManager(AbstractUserAgent userAgent, DtmfEventHandler dtmfEventHandler,  Logger logger) {
         this.userAgent = userAgent;
         this.dtmfEventHandler = dtmfEventHandler;
         this.logger = logger;

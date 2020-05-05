@@ -19,11 +19,16 @@
 
 package net.sourceforge.peers.sip.core.useragent;
 
+import java.io.File;
+import java.net.SocketException;
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.FileLogger;
 import net.sourceforge.peers.Logger;
 import net.sourceforge.peers.XmlConfig;
-import net.sourceforge.peers.media.*;
+import net.sourceforge.peers.media.AbstractSoundManagerFactory;
+import net.sourceforge.peers.media.ConfigAbstractSoundManagerFactory;
+import net.sourceforge.peers.media.Echo;
+import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sdp.SDPManager;
 import net.sourceforge.peers.sip.Utils;
@@ -32,7 +37,6 @@ import net.sourceforge.peers.sip.core.useragent.handlers.CancelHandler;
 import net.sourceforge.peers.sip.core.useragent.handlers.InviteHandler;
 import net.sourceforge.peers.sip.core.useragent.handlers.OptionsHandler;
 import net.sourceforge.peers.sip.core.useragent.handlers.RegisterHandler;
-import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 import net.sourceforge.peers.sip.syntaxencoding.SipUriSyntaxException;
 import net.sourceforge.peers.sip.transaction.Transaction;
 import net.sourceforge.peers.sip.transaction.TransactionManager;
@@ -43,43 +47,43 @@ import net.sourceforge.peers.sip.transport.SipRequest;
 import net.sourceforge.peers.sip.transport.SipResponse;
 import net.sourceforge.peers.sip.transport.TransportManager;
 
-import java.io.File;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
 
-
-public class UserAgent implements DtmfEventHandler {
+public class UserAgent extends AbstractUserAgent {
 
     public final static String CONFIG_FILE = "conf" + File.separator + "peers.xml";
-    public final static int RTP_DEFAULT_PORT = 8000;
 
-    private String peersHome;
-    private Logger logger;
-    private Config config;
+    private final String peersHome;
+    private final Logger logger;
+    private final Config config;
 
-    private List<String> peers;
     //private List<Dialog> dialogs;
     
     //TODO factorize echo and captureRtpSender
     private Echo echo;
     
-    private UAC uac;
-    private UAS uas;
+    private final UAC uac;
+    private final UAS uas;
 
-    private ChallengeManager challengeManager;
+    private final ChallengeManager challengeManager;
     
-    private DialogManager dialogManager;
-    private TransactionManager transactionManager;
-    private TransportManager transportManager;
-    private InviteHandler inviteHandler;
+    private final DialogManager dialogManager;
+    private final TransactionManager transactionManager;
+    private final TransportManager transportManager;
+    private final InitialRequestManager initialRequestManager;
+    private final MidDialogRequestManager midDialogRequestManager;
+
+    private final InviteHandler inviteHandler;
+    private final OptionsHandler optionsHandler;
+    private final CancelHandler cancelHandler;
+    private final ByeHandler byeHandler;
+    private final RegisterHandler registerHandler;
 
     private int cseqCounter;
-    private AbstractSoundManagerFactory abstractSoundManagerFactory;
-    private SipListener sipListener;
+    private final AbstractSoundManagerFactory abstractSoundManagerFactory;
+    private final SipListener sipListener;
     
-    private SDPManager sdpManager;
-    private MediaManager mediaManager;
+    private final SDPManager sdpManager;
+    private final MediaManager mediaManager;
 
     public UserAgent(SipListener sipListener, String peersHome, Logger logger)
                     throws SocketException {
@@ -91,7 +95,7 @@ public class UserAgent implements DtmfEventHandler {
         this(sipListener, config, null, logger);
     }
 
-    private UserAgent(SipListener sipListener, Config config, String peersHome, Logger logger)
+    public UserAgent(SipListener sipListener, Config config, String peersHome, Logger logger)
             throws SocketException {
         this(sipListener, null, config, peersHome, logger);
     }
@@ -99,7 +103,6 @@ public class UserAgent implements DtmfEventHandler {
     public UserAgent(SipListener sipListener, AbstractSoundManagerFactory abstractSoundManagerFactory, Config config, String peersHome, Logger logger)
                     throws SocketException {
         this.sipListener = sipListener;
-        this.abstractSoundManagerFactory = abstractSoundManagerFactory;
         if (peersHome == null) {
             peersHome = Utils.DEFAULT_PEERS_HOME;
         }
@@ -134,105 +137,41 @@ public class UserAgent implements DtmfEventHandler {
 
         //transaction user
         
-        dialogManager = new DialogManager(logger);
+        dialogManager = createDialogManager();
         
         //transaction
         
-        transactionManager = new TransactionManager(logger);
+        transactionManager = createTransactionManager();
         
         //transport
         
-        transportManager = new TransportManager(transactionManager,
-                config, logger);
-        
-        transactionManager.setTransportManager(transportManager);
+        transportManager = createTransportManager();
         
         //core
         
-        inviteHandler = new InviteHandler(this,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
-        CancelHandler cancelHandler = new CancelHandler(this,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
-        ByeHandler byeHandler = new ByeHandler(this,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
-        OptionsHandler optionsHandler = new OptionsHandler(this,
-                transactionManager,
-                transportManager,
-                logger);
-        RegisterHandler registerHandler = new RegisterHandler(this,
-                transactionManager,
-                transportManager,
-                logger);
+        inviteHandler = createInviteHandler();
+        cancelHandler = createCancelHandler();
+        byeHandler = createByeHandler();
+        optionsHandler = createOptionsHandler();
+        registerHandler = createRegisterHandler();
         
-        InitialRequestManager initialRequestManager =
-            new InitialRequestManager(
-                this,
-                inviteHandler,
-                cancelHandler,
-                byeHandler,
-                optionsHandler,
-                registerHandler,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
-        MidDialogRequestManager midDialogRequestManager =
-            new MidDialogRequestManager(
-                this,
-                inviteHandler,
-                cancelHandler,
-                byeHandler,
-                optionsHandler,
-                registerHandler,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
+        initialRequestManager = createInitialRequestManager();
+        midDialogRequestManager = createMidDialogRequestManager();
         
-        uas = new UAS(this,
-                initialRequestManager,
-                midDialogRequestManager,
-                dialogManager,
-                transactionManager,
-                transportManager);
+        challengeManager = createChallengeManager();
 
-        uac = new UAC(this,
-                initialRequestManager,
-                midDialogRequestManager,
-                dialogManager,
-                transactionManager,
-                transportManager,
-                logger);
-
-        challengeManager = new ChallengeManager(config,
-                initialRequestManager,
-                midDialogRequestManager,
-                dialogManager,
-                logger);
-        registerHandler.setChallengeManager(challengeManager);
-        inviteHandler.setChallengeManager(challengeManager);
-        byeHandler.setChallengeManager(challengeManager);
-
-        peers = new ArrayList<String>();
         //dialogs = new ArrayList<Dialog>();
 
-        sdpManager = new SDPManager(this, logger);
-        inviteHandler.setSdpManager(sdpManager);
-        optionsHandler.setSdpManager(sdpManager);
-        mediaManager = new MediaManager(this, this, logger);
+        sdpManager = createSDPManager();
+        mediaManager = createMediaManager();
+
+        uas = createUAS();
+        uac = createUAC();
     }
     
     // client methods
 
+    @Override
     public void close() {
         transportManager.closeTransports();
         transactionManager.closeTimers();
@@ -240,28 +179,34 @@ public class UserAgent implements DtmfEventHandler {
         mediaManager.stopSession();
         config.setPublicInetAddress(null);
     }
-    
+
+    @Override
     public SipRequest register() throws SipUriSyntaxException {
         return uac.register();
     }
 
+    @Override
     public void unregister() throws SipUriSyntaxException {
         uac.unregister();
     }
-    
+
+    @Override
     public SipRequest invite(String requestUri, String callId)
             throws SipUriSyntaxException {
         return uac.invite(requestUri, callId);
     }
-    
+
+    @Override
     public void terminate(SipRequest sipRequest) {
         uac.terminate(sipRequest);
     }
-    
+
+    @Override
     public void acceptCall(SipRequest sipRequest, Dialog dialog) {
         uas.acceptCall(sipRequest, dialog);
     }
-    
+
+    @Override
     public void rejectCall(SipRequest sipRequest) {
         uas.rejectCall(sipRequest);
     }
@@ -274,6 +219,7 @@ public class UserAgent implements DtmfEventHandler {
      * @param sipMessage
      * @return null if sipMessage is neither a SipRequest neither a SipResponse
      */
+    @Override
     public SipRequest getSipRequest(SipMessage sipMessage) {
         if (sipMessage instanceof SipRequest) {
             return (SipRequest) sipMessage;
@@ -298,9 +244,46 @@ public class UserAgent implements DtmfEventHandler {
 //        return dialogs;
 //    }
 
-    public List<String> getPeers() {
-        return peers;
+    @Override
+    protected Logger getLogger() {
+        return logger;
     }
+
+    @Override
+    protected InviteHandler getInviteHandler() {
+        return inviteHandler;
+    }
+
+    @Override
+    protected OptionsHandler getOptionsHandler() {
+        return optionsHandler;
+    }
+
+    @Override
+    protected CancelHandler getCancelHandler() {
+        return cancelHandler;
+    }
+
+    @Override
+    protected ByeHandler getByeHandler() {
+        return byeHandler;
+    }
+
+    @Override
+    protected RegisterHandler getRegisterHandler() {
+        return registerHandler;
+    }
+
+    @Override
+    protected InitialRequestManager getInitialRequestManager() {
+        return initialRequestManager;
+    }
+
+    @Override
+    protected MidDialogRequestManager getMidDialogRequestManager() {
+        return midDialogRequestManager;
+    }
+
 
 //    public Dialog getDialog(String peer) {
 //        for (Dialog dialog : dialogs) {
@@ -314,6 +297,7 @@ public class UserAgent implements DtmfEventHandler {
 //        return null;
 //    }
 
+    @Override
     public String generateCSeq(String method) {
         StringBuffer buf = new StringBuffer();
         buf.append(cseqCounter++);
@@ -321,80 +305,69 @@ public class UserAgent implements DtmfEventHandler {
         buf.append(method);
         return buf.toString();
     }
-    
+
+    @Override
     public boolean isRegistered() {
         return uac.getInitialRequestManager().getRegisterHandler()
             .isRegistered();
     }
 
+    @Override
     public UAS getUas() {
         return uas;
     }
 
+    @Override
     public UAC getUac() {
         return uac;
     }
 
+    @Override
     public DialogManager getDialogManager() {
         return dialogManager;
     }
-    
-    public int getSipPort() {
-        return transportManager.getSipPort();
-    }
 
-    public int getRtpPort() {
-        return config.getRtpPort();
-    }
-
-    public String getDomain() {
-        return config.getDomain();
-    }
-
-    public String getUserpart() {
-        return config.getUserPart();
-    }
-
-    public MediaMode getMediaMode() {
-        return config.getMediaMode();
-    }
-
-    public boolean isMediaDebug() {
-        return config.isMediaDebug();
-    }
-
-    public SipURI getOutboundProxy() {
-        return config.getOutboundProxy();
-    }
-
+    @Override
     public Echo getEcho() {
         return echo;
     }
 
+    @Override
     public void setEcho(Echo echo) {
         this.echo = echo;
     }
 
+    @Override
     public AbstractSoundManagerFactory getAbstractSoundManagerFactory() {
         return abstractSoundManagerFactory;
     }
 
+    @Override
     public SipListener getSipListener() {
         return sipListener;
     }
 
+    @Override
     public MediaManager getMediaManager() {
         return mediaManager;
     }
 
+    @Override
     public Config getConfig() {
         return config;
     }
 
+    @Override
     public String getPeersHome() {
         return peersHome;
     }
 
+    @Override
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    @Override
     public TransportManager getTransportManager() {
         return transportManager;
     }

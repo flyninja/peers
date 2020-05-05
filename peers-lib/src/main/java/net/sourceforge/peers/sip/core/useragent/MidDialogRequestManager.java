@@ -50,7 +50,7 @@ import net.sourceforge.peers.sip.transport.TransportManager;
 public class MidDialogRequestManager extends RequestManager
         implements ClientTransactionUser, ServerTransactionUser {
 
-    public MidDialogRequestManager(UserAgent userAgent,
+    public MidDialogRequestManager(AbstractUserAgent userAgent,
             InviteHandler inviteHandler,
             CancelHandler cancelHandler,
             ByeHandler byeHandler,

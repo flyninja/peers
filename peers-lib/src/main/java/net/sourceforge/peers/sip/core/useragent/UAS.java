@@ -57,7 +57,7 @@ public class UAS implements SipServerTransportUser {
     /**
      * should be instanciated only once, it was a singleton.
      */
-    public UAS(UserAgent userAgent,
+    public UAS(AbstractUserAgent userAgent,
             InitialRequestManager initialRequestManager,
             MidDialogRequestManager midDialogRequestManager,
             DialogManager dialogManager,

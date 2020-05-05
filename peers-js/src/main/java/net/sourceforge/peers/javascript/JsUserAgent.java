@@ -33,6 +33,7 @@ import net.sourceforge.peers.javaxsound.JavaxSoundManager;
 import net.sourceforge.peers.media.AbstractSoundManager;
 import net.sourceforge.peers.media.MediaManager;
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.rtp.RFC4733;
 import net.sourceforge.peers.sip.RFC3261;
 import net.sourceforge.peers.sip.Utils;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
@@ -84,8 +85,7 @@ public class JsUserAgent extends Applet implements SipListener, WebLoggerOutput 
                 public void run() {
 
                     try {
-                        userAgent = new UserAgent(JsUserAgent.this, config,
-                                logger, soundManager);
+                        userAgent = new UserAgent(JsUserAgent.this, config, logger);
                         System.out.println("useragent created");
                     } catch (SocketException e) {
                         logger.error(e.getMessage());
@@ -348,6 +348,11 @@ public class JsUserAgent extends Applet implements SipListener, WebLoggerOutput 
                 }
             }
         });
+
+    }
+
+    @Override
+    public void dtmfEvent(RFC4733.DTMFEvent dtmfEvent, int duration) {
 
     }
 

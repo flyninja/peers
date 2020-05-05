@@ -23,15 +23,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.TimerTask;
-
-import net.sourceforge.peers.Timer;
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.Logger;
+import net.sourceforge.peers.Timer;
 import net.sourceforge.peers.sip.RFC3261;
+import net.sourceforge.peers.sip.core.useragent.AbstractUserAgent;
 import net.sourceforge.peers.sip.core.useragent.InitialRequestManager;
 import net.sourceforge.peers.sip.core.useragent.RequestManager;
 import net.sourceforge.peers.sip.core.useragent.SipListener;
-import net.sourceforge.peers.sip.core.useragent.UserAgent;
 import net.sourceforge.peers.sip.syntaxencoding.NameAddress;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldName;
 import net.sourceforge.peers.sip.syntaxencoding.SipHeaderFieldValue;
@@ -65,7 +64,7 @@ public class RegisterHandler extends MethodHandler
     private boolean unregisterInvoked;
     private boolean registered;
     
-    public RegisterHandler(UserAgent userAgent,
+    public RegisterHandler(AbstractUserAgent userAgent,
             TransactionManager transactionManager,
             TransportManager transportManager, Logger logger) {
         super(userAgent, transactionManager, transportManager, logger);

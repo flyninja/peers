@@ -46,7 +46,7 @@ import net.sourceforge.peers.sip.transport.TransportManager;
 public class InitialRequestManager extends RequestManager
         implements ServerTransactionUser {
 
-    public InitialRequestManager(UserAgent userAgent,
+    public InitialRequestManager(AbstractUserAgent userAgent,
             InviteHandler inviteHandler,
             CancelHandler cancelHandler,
             ByeHandler byeHandler,

@@ -3,8 +3,11 @@ package net.sourceforge.peers.demo;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import java.util.List;
 import net.sourceforge.peers.Config;
 import net.sourceforge.peers.media.MediaMode;
+import net.sourceforge.peers.media.SoundSource;
+import net.sourceforge.peers.sdp.Codec;
 import net.sourceforge.peers.sip.syntaxencoding.SipURI;
 
 public class CustomConfig implements Config {
@@ -39,6 +42,11 @@ public class CustomConfig implements Config {
     @Override public String getAuthorizationUsername() { return getUserPart(); }
 
     @Override
+    public List<Codec> getSupportedCodecs() {
+        return null;
+    }
+
+    @Override
     public void setPublicInetAddress(InetAddress inetAddress) {
         publicIpAddress = inetAddress;
     }
@@ -46,6 +54,12 @@ public class CustomConfig implements Config {
     @Override public SipURI getOutboundProxy() { return null; }
     @Override public int getSipPort() { return 0; }
     @Override public boolean isMediaDebug() { return false; }
+
+    @Override
+    public SoundSource.DataFormat getMediaFileDataFormat() {
+        return SoundSource.DataFormat.ALAW_8KHZ_MONO_LITTLE_ENDIAN;
+    }
+
     @Override public String getMediaFile() { return null; }
     @Override public int getRtpPort() { return 0; }
     @Override public void setLocalInetAddress(InetAddress inetAddress) { }
@@ -56,9 +70,20 @@ public class CustomConfig implements Config {
     @Override public void setSipPort(int sipPort) { }
     @Override public void setMediaMode(MediaMode mediaMode) { }
     @Override public void setMediaDebug(boolean mediaDebug) { }
+
+    @Override
+    public void setMediaFileDataFormat(SoundSource.DataFormat mediaFileDataFormat) {
+
+    }
+
     @Override public void setMediaFile(String mediaFile) { }
     @Override public void setRtpPort(int rtpPort) { }
     @Override public void save() { }
     @Override public void setAuthorizationUsername(String authorizationUsername) { }
-    
+
+    @Override
+    public void setSupportedCodecs(List<Codec> supportedCodecs) {
+
+    }
+
 }

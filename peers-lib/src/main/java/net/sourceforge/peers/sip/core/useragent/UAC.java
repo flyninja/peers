@@ -51,7 +51,7 @@ public class UAC {
     private String profileUri;
     
     //FIXME
-    private UserAgent userAgent;
+    private AbstractUserAgent userAgent;
     private TransactionManager transactionManager;
     private DialogManager dialogManager;
     private List<String> guiClosedCallIds;
@@ -60,7 +60,7 @@ public class UAC {
     /**
      * should be instanciated only once, it was a singleton.
      */
-    public UAC(UserAgent userAgent,
+    public UAC(AbstractUserAgent userAgent,
             InitialRequestManager initialRequestManager,
             MidDialogRequestManager midDialogRequestManager,
             DialogManager dialogManager,
